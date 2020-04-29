@@ -3,8 +3,10 @@
 class NotificationsController < ApplicationController
   def create
     # クライアントからのPOSTリクエストのボディからデータを送信先を取得
-    id = paramas[:id]
+    to = params[:to]
     # 送信先に対応するストリームを指定
-    ActionCable.server.broadcast("notification_channel_#{id}", "POST message to #{id}!")
+    ActionCable.server.broadcast("notification_channel_#{to}", "POST message to #{to}!")
+
+    render json: { to: to }
   end
 end
