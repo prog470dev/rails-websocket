@@ -33,6 +33,10 @@ class App extends React.Component {
     );
   }
 
+  componentWillUnmount(){
+    this.chatChannel.unsubscribe();
+  }
+
   handleClick() {
     // Rails側のチャネルクラスで定義されたメソッドを指定することでメッセージ送信
     // 送信データは object（ハッシュ形式）
