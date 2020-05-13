@@ -1,57 +1,34 @@
-import React from "react";
-import Actioncable from "actioncable";
+import React, { useState, useEffect } from "react";
+import { useWebsocket } from "./useWebsocket";
+import { Link } from "react-router-dom";
 
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      messages: [],
-    };
-    this.handleClick = this.handleClick.bind(this);
+const App = () => {
+  const [messages, setMessages] = useState([]);
 
-    // websocketの設定
-    this.endpoint = "ws:localhost:3000/cable";
-    this.cable = Actioncable.createConsumer(this.endpoint);
-    // 購読するチャネルの設定
-    this.chatChannel = this.cable.subscriptions.create(
-      {
-        // チャネル(=Rails側のチャネルクラス名)の指定
-        channel: "BroadcastChannel",
-      },
-      {
-        // チャネルとの接続が確立した時に実行される処理
-        connected: () => {
-          console.log("connected.");
-        },
-        // チャネルからメッセージを購読した時に実行される処理
-        received: (data) => {
-          this.setState({
-            messages: [...this.state.messages, data],
-          });
-        },
-      }
-    );
-  }
+  const channel = useWebsocket((data)=>{
+    setMessages(m => [...m, data]);
+  });
 
-  handleClick() {
-    // Rails側のチャネルクラスで定義されたメソッドを指定することでメッセージ送信
-    // 送信データは object（ハッシュ形式）
-    this.chatChannel.perform("speak", {
+  const handleClick = (chatChannel) => {
+    if (chatChannel == null) {
+      return;
+    }
+    chatChannel.perform("speak", {
       message: "hoge",
     });
   }
 
-  render() {
-    const items = this.state.messages.map((message, i) => {
-      return <li key={i}>{message}</li>;
-    });
-    return (
-      <div>
-        <button onClick={this.handleClick}>message</button>
-        <ul>{items}</ul>
-      </div>
-    );
-  }
+  const items = messages.map((message, i) => {
+    return <li key={i}>{message}</li>;
+  });
+
+  return (
+    <div>
+      <Link to="/hello">Hello</Link>
+      <button onClick={() => handleClick(channel)}>message</button>
+      <ul>{items}</ul>
+    </div>
+  );
 }
 
 export default App;
